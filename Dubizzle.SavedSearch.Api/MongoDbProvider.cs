@@ -5,9 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Dubizzle.SavedSearch.Api
-{
+{   
     public class MongoDbProvider : IDatabaseProvider
     {
         private readonly IMongoDatabase _database;
@@ -22,33 +23,33 @@ namespace Dubizzle.SavedSearch.Api
             _collection = configuration.GetConnectionString("SubscriptionsCollectionName");
         }
 
-        public T Create<T>(T entity)
+        public async Task<T> CreateAsync<T>(T entity)
         {
-            GetCollection<T>().InsertOne(entity);
+            await GetCollection<T>().InsertOneAsync(entity);
 
             return entity;
         }
 
-        public void Delete<T>(Expression<Func<T, bool>> filter) where T : IEntity
+        public async Task DeleteAsync<T>(Expression<Func<T, bool>> filter) where T : IEntity
         {
             var update = Builders<T>.Update.Set(s => s.IsDeleted, true);
 
-            var result = GetCollection<T>().UpdateOne(filter, update);
+            await GetCollection<T>().UpdateOneAsync(filter, update);
         }
 
-        public IEnumerable<T> GetAll<T>(Expression<Func<T, bool>> filter) where T : IEntity
+        public async Task<IEnumerable<T>> GetAllAsync<T>(Expression<Func<T, bool>> filter) where T : IEntity
         {
-            return GetCollection<T>().Find(filter).ToList();
+            return  (await GetCollection<T>().FindAsync(filter)).ToList();
         }
 
-        public T GetById<T>(Expression<Func<T, bool>> filter) where T : IEntity
+        public async Task<T> GetByIdAsync<T>(Expression<Func<T, bool>> filter) where T : IEntity
         {
-            return GetAll(filter).FirstOrDefault();
+            return (await GetAllAsync(filter)).FirstOrDefault();
         }
 
-        public T Update<T>(T entity, Expression<Func<T, bool>> filter) where T : IEntity
+        public async Task<T> UpdateAsync<T>(T entity, Expression<Func<T, bool>> filter) where T : IEntity
         {
-            GetCollection<T>().ReplaceOne(filter, entity);
+            await GetCollection<T>().ReplaceOneAsync(filter, entity);
 
             return entity;
         }

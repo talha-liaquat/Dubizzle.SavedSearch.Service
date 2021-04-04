@@ -74,7 +74,7 @@ namespace Dubizzle.SavedSearch.Scheduler
         {
             var count = Interlocked.Increment(ref executionCount);
 
-            var subscriptions = _subscriptionService.GetAll();
+            var subscriptions = _subscriptionService.GetAllAsync().Result;
 
             foreach (var subscription in subscriptions)
             {

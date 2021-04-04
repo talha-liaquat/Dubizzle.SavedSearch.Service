@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.ComponentModel.DataAnnotations;
-
+using System.Threading.Tasks;
 
 namespace Dubizzle.SavedSearch.Api.Controllers
 {
@@ -23,9 +23,9 @@ namespace Dubizzle.SavedSearch.Api.Controllers
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(SubscriptionResponseDto), StatusCodes.Status200OK)]
-        public IActionResult Get([Required] string id, [Required][FromHeader(Name = "User-Id")] string userId)
+        public async Task<IActionResult> GetAsync([Required] string id, [Required][FromHeader(Name = "User-Id")] string userId)
         {
-            var response = _subscriptionService.Get(id, userId);
+            var response = await _subscriptionService.GetAsync(id, userId);
 
             if (response == null)
                 return NoContent();
@@ -35,9 +35,9 @@ namespace Dubizzle.SavedSearch.Api.Controllers
 
         [HttpGet("user/{userId}")]
         [ProducesResponseType(typeof(SubscriptionResponseDto), StatusCodes.Status200OK)]
-        public IActionResult GetByUser([Required] string userId)
+        public async Task<IActionResult> GetByUser([Required] string userId)
         {
-            var response = _subscriptionService.GetByUserId(userId);
+            var response = await _subscriptionService.GetByUserIdAsync(userId);
 
             if (response == null)
                 return NoContent();
@@ -46,12 +46,12 @@ namespace Dubizzle.SavedSearch.Api.Controllers
         }
 
         [HttpPost]
-        public IActionResult PostAsync([Required] CreateSubscriptionRequestDto request, [Required][FromHeader(Name = "User-Id")] string userId)
+        public async Task<IActionResult> PostAsync([Required] CreateSubscriptionRequestDto request, [Required][FromHeader(Name = "User-Id")] string userId)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values);
 
-            var response = _subscriptionService.Create(request, userId);
+            var response = await _subscriptionService.CreateAsync(request, userId);
 
             response.Url = $"{Request.Scheme}://{Request.Host}{Request.Path}/user/{userId}/subscription/{response.SubscriptionId}";
 
@@ -59,12 +59,12 @@ namespace Dubizzle.SavedSearch.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put([Required] string id, [Required] CreateSubscriptionRequestDto request, [Required][FromHeader(Name = "User-Id")] string userId)
+        public async Task<IActionResult> PutAsync([Required] string id, [Required] CreateSubscriptionRequestDto request, [Required][FromHeader(Name = "User-Id")] string userId)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values);
 
-            var response = _subscriptionService.Update(request, id, userId);
+            var response = await _subscriptionService.UpdateAsync(request, id, userId);
 
             response.Url = $"{Request.Scheme}://{Request.Host}{Request.Path}/user/{userId}/subscription/{response.SubscriptionId}";
 
@@ -72,9 +72,9 @@ namespace Dubizzle.SavedSearch.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id, [Required][FromHeader(Name = "User-Id")] string userId)
+        public async Task<IActionResult> DeleteAsync(string id, [Required][FromHeader(Name = "User-Id")] string userId)
         {
-            _subscriptionService.Delete(id, userId);
+            await _subscriptionService.DeleteAsync(id, userId);
 
             return Ok();
         }

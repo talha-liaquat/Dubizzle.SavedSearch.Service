@@ -1,6 +1,7 @@
 ﻿using Dubizzle.SavedSearch.Contracts;
 using Dubizzle.SavedSearch.Entity;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Dubizzle.SavedSearch.Repository
 {
@@ -13,34 +14,34 @@ namespace Dubizzle.SavedSearch.Repository
             _databaseProvider = databaseProvider ?? throw new System.ArgumentNullException(nameof(databaseProvider));
         }
         
-        public string Create(Subscription subscription)
+        public async Task<string> CreateAsync(Subscription subscription)
         {
-            return _databaseProvider.Create(subscription).SubscriptionId;
+            return (await _databaseProvider.CreateAsync(subscription)).SubscriptionId;
         }
 
-        public void Delete(string subscriptionId, string userId)
+        public async Task DeleteAsync(string subscriptionId, string userId)
         {
-            _databaseProvider.Delete<Subscription>(x=> x.SubscriptionId == subscriptionId && x.UserId == userId && !x.IsDeleted);
+            await _databaseProvider.DeleteAsync<Subscription>(x=> x.SubscriptionId == subscriptionId && x.UserId == userId && !x.IsDeleted);
         }
 
-        public Subscription Get(string subscriptionId, string userId)
+        public async Task<Subscription> GetAsync(string subscriptionId, string userId)
         {
-            return _databaseProvider.GetById<Subscription>(x => x.SubscriptionId == subscriptionId && x.UserId == userId && !x.IsDeleted);
+            return await _databaseProvider.GetByIdAsync<Subscription>(x => x.SubscriptionId == subscriptionId && x.UserId == userId && !x.IsDeleted);
         }
 
-        public IEnumerable<Subscription> GetAll()
+        public async Task<IEnumerable<Subscription>> GetAllAsync()
         {
-            return _databaseProvider.GetAll<Subscription>(x => !x.IsDeleted);
+            return await _databaseProvider.GetAllAsync<Subscription>(x => !x.IsDeleted);
         }
 
-        public IEnumerable<Subscription> GetAllByUserId(string userId)
+        public async Task<IEnumerable<Subscription>> GetAllByUserIdAsync(string userId)
         {
-            return _databaseProvider.GetAll<Subscription>(x => x.UserId == userId && !x.IsDeleted);
+            return await _databaseProvider.GetAllAsync<Subscription>(x => x.UserId == userId && !x.IsDeleted);
         }
 
-        public Subscription Update(Subscription subscription, string subscriptionId)
+        public async Task<Subscription> UpdateAsync(Subscription subscription, string subscriptionId)
         {
-            return _databaseProvider.Update(subscription, x => x.SubscriptionId == subscriptionId && !x.IsDeleted);
+            return await _databaseProvider.UpdateAsync(subscription, x => x.SubscriptionId == subscriptionId && !x.IsDeleted);
         }
     }
 }

@@ -1,15 +1,16 @@
 ﻿using Dubizzle.SavedSearch.Dto;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Dubizzle.SavedSearch.Contracts
 {
     public interface ISubscriptionService
     {
-        CreateSubscriptionResponseDto Create(CreateSubscriptionRequestDto request, string userId);
-        SubscriptionResponseDto Get(string subscriptionId, string userId);
-        IEnumerable<SubscriptionResponseDto> GetByUserId(string userId);
-        CreateSubscriptionResponseDto Update(CreateSubscriptionRequestDto request, string subscriptionId, string userId);
-        void Delete(string subscriptionId, string userId);
-        IEnumerable<SubscriptionResponseDto> GetAll();
+        Task<CreateSubscriptionResponseDto> CreateAsync(CreateSubscriptionRequestDto request, string userId);
+        Task<SubscriptionResponseDto> GetAsync(string subscriptionId, string userId);
+        Task<IEnumerable<SubscriptionResponseDto>> GetByUserIdAsync(string userId);
+        Task<CreateSubscriptionResponseDto> UpdateAsync(CreateSubscriptionRequestDto request, string subscriptionId, string userId);
+        Task DeleteAsync(string subscriptionId, string userId);
+        Task<IEnumerable<SubscriptionResponseDto>> GetAllAsync();
     }
 }

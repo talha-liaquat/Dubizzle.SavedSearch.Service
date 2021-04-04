@@ -5,6 +5,7 @@ using Dubizzle.SavedSearch.Service;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Dubizzle.SavedSearch.Tests
@@ -20,15 +21,15 @@ namespace Dubizzle.SavedSearch.Tests
         }
 
         [Fact]
-        public void Create_SupplyValidData_ReturnResponseDto()
+        public async Task Create_SupplyValidData_ReturnResponseDto()
         {
             #region Arrange
             var message = new CreateSubscriptionRequestDto { Email = "mockEmail@email.com", Details = new List<SubscriptionDetailDto> { new SubscriptionDetailDto { Catalogue = "catalogue", Key = "item", Operator = "=", Value = "BMW" } }  };
-            _mockSubscriptionRepository.Setup(x => x.Create(It.IsAny<Subscription>())).Returns(Guid.NewGuid().ToString());
+            _mockSubscriptionRepository.Setup(x => x.CreateAsync(It.IsAny<Subscription>())).ReturnsAsync(Guid.NewGuid().ToString());
             #endregion
 
             #region Act
-            var result = _subscriptionService.Create(message, It.IsAny<string>());
+            var result = await _subscriptionService.CreateAsync(message, It.IsAny<string>());
             #endregion
 
             #region Assert
@@ -38,17 +39,17 @@ namespace Dubizzle.SavedSearch.Tests
         }
 
         [Fact]
-        public void Update_SupplyValidData_ReturnResponseDto()
+        public async Task Update_SupplyValidData_ReturnResponseDto()
         {
             #region Arrange
             var message = new CreateSubscriptionRequestDto { Email = "mockEmail@email.com", Details = new List<SubscriptionDetailDto> { new SubscriptionDetailDto { Catalogue = "catalogue", Key = "item", Operator = "=", Value = "BMW" } } };
             var mockSubscriptionId = Guid.NewGuid().ToString();
             var mocKSubscription = new Subscription { SubscriptionId = mockSubscriptionId };
-            _mockSubscriptionRepository.Setup(x => x.Update(mocKSubscription, mockSubscriptionId)).Returns(mocKSubscription);
+            _mockSubscriptionRepository.Setup(x => x.UpdateAsync(mocKSubscription, mockSubscriptionId)).ReturnsAsync(mocKSubscription);
             #endregion
 
             #region Act
-            var result = _subscriptionService.Update(message, mockSubscriptionId, "100");
+            var result = await _subscriptionService.UpdateAsync(message, mockSubscriptionId, "100");
             #endregion
 
             #region Assert
