@@ -4,6 +4,8 @@ namespace Dubizzle.SavedSearch.Dto
 {
     public class SubscriptionDetailDto
     {
+        [Required] 
+        public string Catalogue { get; set; }
         [Required]
         public string Key { get; set; }
         [Required] 

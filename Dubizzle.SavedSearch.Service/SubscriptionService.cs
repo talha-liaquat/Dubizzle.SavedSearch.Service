@@ -38,10 +38,8 @@ namespace Dubizzle.SavedSearch.Service
                     CreatedOn = DateTime.Now,
                     SubscriptionId = subscriptionId,
                     UserId = userId,
-                    DbContext = request.DbContext,
-                    CronExpression = request.CronExpression,
                     Email = request.Email,
-                    Details = request.Details.Select(x => new SubscriptionDetail { Key = x.Key, Operator = x.Operator, Value = x.Value })
+                    Details = request.Details.Select(x => new SubscriptionDetail { Catalogue = x.Catalogue, Key = x.Key, Operator = x.Operator, Value = x.Value })
                 });
 
             return new CreateSubscriptionResponseDto { SubscriptionId = subscriptionId };
@@ -112,6 +110,16 @@ namespace Dubizzle.SavedSearch.Service
                 throw new ArgumentNullException(nameof(userId));
             
             _subscriptionRepository.Delete(subscriptionId, userId);
+        }
+
+        public IEnumerable<SubscriptionResponseDto> GetAll()
+        {
+            var entities = _subscriptionRepository.GetAll();
+
+            if (entities == null)
+                return null;
+
+            return entities.Select(entity => MapSubscriptionResponseDto(entity));
         }
     }
 }

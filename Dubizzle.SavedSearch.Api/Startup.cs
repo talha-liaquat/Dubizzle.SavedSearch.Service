@@ -68,9 +68,7 @@ namespace Dubizzle.SavedSearch.Api
 
             #region Dependencey Injections
             services.AddScoped<ISubscriptionService, SubscriptionService>();
-
             services.AddScoped<ISubscriptionRepository<Subscription>, SubscriptionRepository>();
-
             services.AddSingleton<IDatabaseProvider, MongoDbProvider>();
             #endregion
         }

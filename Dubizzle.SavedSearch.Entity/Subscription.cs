@@ -10,8 +10,6 @@ namespace Dubizzle.SavedSearch.Entity
         public string SubscriptionId { get; set; }
         public string UserId { get; set; }
         public string Email { get; set; }
-        public string CronExpression { get; set; }
-        public string DbContext { get; set; }
         public IEnumerable<SubscriptionDetail> Details { get; set; }
         public DateTime CreatedOn { get; set; }
         public bool IsDeleted { get; set; }

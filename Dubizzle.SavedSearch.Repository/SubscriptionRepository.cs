@@ -28,6 +28,11 @@ namespace Dubizzle.SavedSearch.Repository
             return _databaseProvider.GetById<Subscription>(x => x.SubscriptionId == subscriptionId && x.UserId == userId && !x.IsDeleted);
         }
 
+        public IEnumerable<Subscription> GetAll()
+        {
+            return _databaseProvider.GetAll<Subscription>(x => !x.IsDeleted);
+        }
+
         public IEnumerable<Subscription> GetAllByUserId(string userId)
         {
             return _databaseProvider.GetAll<Subscription>(x => x.UserId == userId && !x.IsDeleted);

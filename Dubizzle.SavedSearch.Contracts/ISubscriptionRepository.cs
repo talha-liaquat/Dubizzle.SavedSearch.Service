@@ -9,5 +9,6 @@ namespace Dubizzle.SavedSearch.Contracts
         void Delete(string subscriptionId, string userId);
         T Get(string subscriptionId, string userId);
         IEnumerable<T> GetAllByUserId(string userId);
+        IEnumerable<T> GetAll();
     }
 }

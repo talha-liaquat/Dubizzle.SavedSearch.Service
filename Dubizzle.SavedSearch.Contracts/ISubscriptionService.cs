@@ -10,5 +10,6 @@ namespace Dubizzle.SavedSearch.Contracts
         IEnumerable<SubscriptionResponseDto> GetByUserId(string userId);
         CreateSubscriptionResponseDto Update(CreateSubscriptionRequestDto request, string subscriptionId, string userId);
         void Delete(string subscriptionId, string userId);
+        IEnumerable<SubscriptionResponseDto> GetAll();
     }
 }
