@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dubizzle.SavedSearch.Contracts\Dubizzle.SavedSearch.Contracts.csproj" />
+    <ProjectReference Include="..\Dubizzle.SavedSearch.Dto\Dubizzle.SavedSearch.Dto.csproj" />
+    <ProjectReference Include="..\Dubizzle.SavedSearch.Entity\Dubizzle.SavedSearch.Entity.csproj" />
+    <ProjectReference Include="..\Dubizzle.SavedSearch.Repository\Dubizzle.SavedSearch.Repository.csproj" />
+  </ItemGroup>
+
+</Project>
