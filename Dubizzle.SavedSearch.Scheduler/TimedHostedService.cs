@@ -1,40 +1,69 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Dubizzle.SavedSearch.Contracts;
+﻿using Dubizzle.SavedSearch.Contracts;
 using Dubizzle.SavedSearch.Dto;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Dubizzle.SavedSearch.Scheduler
 {
     public class TimedHostedService : IHostedService, IDisposable
     {
-        private int executionCount = 0;
         private readonly ILogger<TimedHostedService> _logger;
         private readonly ISubscriptionService _subscriptionService;
         private readonly IQueueProvider<InternalMessageEnvelopDto> _queueProvider;
+        private readonly IProductService<ProductSearchRequestDto, ProductSearchResponseDto> _productService;
+        private readonly INotificationService<EmailMessageDto> _notificationService;
+        private readonly ITemplateService<(InternalMessageEnvelopDto message, ProductSearchResponseDto searchResult)> _templateService;
         private Timer _timer;
         private const string exchange = "Dubizzle.Exchange";
         private const string exchangeRetry = "Dubizzle.Exchange.Retry";
         private const string queue = "Dubizzle.Subscriptions";
 
-        public TimedHostedService(ILogger<TimedHostedService> logger, ISubscriptionService subscriptionService, IQueueProvider<InternalMessageEnvelopDto> queueProvider)
+        public TimedHostedService(ILogger<TimedHostedService> logger, 
+            ISubscriptionService subscriptionService, 
+            IQueueProvider<InternalMessageEnvelopDto> queueProvider, 
+            IProductService<ProductSearchRequestDto, ProductSearchResponseDto> productService, 
+            INotificationService<EmailMessageDto> notificationService,
+            ITemplateService<(InternalMessageEnvelopDto message, ProductSearchResponseDto searchResult)> templateService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
             _queueProvider = queueProvider ?? throw new ArgumentNullException(nameof(queueProvider));
-            _queueProvider.OnMessageReceived += queueProvider_OnMessageReceived;
+            _queueProvider.OnMessageReceived += OnMessageReceived;
+            _productService = productService ?? throw new ArgumentNullException(nameof(productService));
+            _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+            _templateService = templateService ?? throw new ArgumentNullException(nameof(templateService));
         }
 
-        private void queueProvider_OnMessageReceived(object sender, EventArgs e)
+        private void OnMessageReceived(object sender, EventArgs e)
         {
             try
             {
-                Console.WriteLine("Calling Search Service to Get Data");
-                Console.WriteLine("Sending Email");
-                _queueProvider.Commit((sender as InternalMessageEnvelopDto));
+                var message = (sender as InternalMessageEnvelopDto);
+
+                if (message == null)
+                    return;
+
+                var searchResult = _productService
+                    .Search(new ProductSearchRequestDto {  Params = new List<ProductSearchRequestParamDto> {  new ProductSearchRequestParamDto {   Key = message.Key, Operator = message.Operator, Value = message.Operator } }});
+
+                if (searchResult == null || searchResult.Result == null || !searchResult.Result.Any())
+                    return;
+
+                var htmlTeamplate = _templateService.GenerateTemplate((message, searchResult));
+
+                _notificationService.SendNotificationAsync(new EmailMessageDto
+                {
+                    Subject = "Dubizzle Product(s) Notification",
+                    Recepients = new List<string> { message.Email },
+                    Body = htmlTeamplate
+                }).Wait();
+
+                _queueProvider.Commit(message);
             }
             catch (Exception ex)
             {
@@ -47,33 +76,17 @@ namespace Dubizzle.SavedSearch.Scheduler
         {
             _logger.LogInformation("Timed Hosted Service running.");
 
-            _queueProvider.ExchangeDeclare(exchange, "topic", true);
-            _queueProvider.ExchangeDeclare(exchangeRetry, "topic", true);
-
-            _queueProvider.QueueDeclare(queue, true, false, false, new Dictionary<string, object> {
-                            { "x-dead-letter-exchange", exchangeRetry }});
-            _queueProvider.QueueBind(queue, exchange, $"{queue}.#", null);
-
-            _queueProvider.QueueDeclare($"{queue}.Log", true, false, false, new Dictionary<string, object> {
-                            { "x-message-ttl", 432000000 }});
-            _queueProvider.QueueBind($"{queue}.Log", exchange, $"{queue}.#", null);
-
-            _queueProvider.QueueDeclare($"{queue}.Retry", true, false, false, new Dictionary<string, object> {
-                            { "x-dead-letter-exchange", exchange },
-                            { "x-message-ttl", 900000 }});
-            _queueProvider.QueueBind($"{queue}.Retry", exchangeRetry, $"{queue}.#", null);
+            _queueProvider.BindExchangeAndQueues(exchange, exchangeRetry, queue);
 
             _queueProvider.Read(queue);
 
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(86400));
-            
+            _timer = new Timer(SubscriptionTrigger, null, TimeSpan.Zero, TimeSpan.FromSeconds(86400));
+
             return Task.CompletedTask;
         }
 
-        private void DoWork(object state)
+        private void SubscriptionTrigger(object state)
         {
-            var count = Interlocked.Increment(ref executionCount);
-
             var subscriptions = _subscriptionService.GetAllAsync().Result;
 
             foreach (var subscription in subscriptions)

@@ -18,10 +18,15 @@ namespace Dubizzle.SavedSearch.Scheduler
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddSingleton<IQueueProvider<InternalMessageEnvelopDto>, RabbitMqProvider>();
+                    services.AddSingleton<ITemplateService<(InternalMessageEnvelopDto, ProductSearchResponseDto)>, EmailHtmlTemplateService>();
                     services.AddScoped<ISubscriptionService, SubscriptionService>();
                     services.AddScoped<ISubscriptionRepository<Subscription>, SubscriptionRepository>();
                     services.AddSingleton<IDatabaseProvider, MongoDbProvider>();
                     services.AddHostedService<TimedHostedService>();
+                    services.AddSingleton<ICacheProvider, RedisCacheProvider>();
+                    services.AddSingleton<INotificationService<EmailMessageDto>, EmailService>();
+                    services.AddSingleton<IProductService<ProductSearchRequestDto, ProductSearchResponseDto>, ProductService>();
+                    
                 })
                 .Build();
 

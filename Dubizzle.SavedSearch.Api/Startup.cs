@@ -70,6 +70,7 @@ namespace Dubizzle.SavedSearch.Api
             services.AddScoped<ISubscriptionService, SubscriptionService>();
             services.AddScoped<ISubscriptionRepository<Subscription>, SubscriptionRepository>();
             services.AddSingleton<IDatabaseProvider, MongoDbProvider>();
+            services.AddSingleton<ICacheProvider, RedisCacheProvider>();
             #endregion
         }
 

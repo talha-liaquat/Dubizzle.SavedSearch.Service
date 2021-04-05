@@ -11,10 +11,12 @@ namespace Dubizzle.SavedSearch.Service
     public class SubscriptionService : ISubscriptionService
     {
         private readonly ISubscriptionRepository<Subscription> _subscriptionRepository;
+        private readonly ICacheProvider _cacheProvider;
 
-        public SubscriptionService(ISubscriptionRepository<Subscription> subscriptionRepository)
+        public SubscriptionService(ISubscriptionRepository<Subscription> subscriptionRepository, ICacheProvider cacheProvider)
         {
             _subscriptionRepository = subscriptionRepository ?? throw new ArgumentNullException(nameof(subscriptionRepository));
+            _cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
         }
 
         public Task<CreateSubscriptionResponseDto> CreateAsync(CreateSubscriptionRequestDto request, string userId)
@@ -32,16 +34,19 @@ namespace Dubizzle.SavedSearch.Service
         {
             subscriptionId ??= Guid.NewGuid().ToString();
 
-            var id = await _subscriptionRepository.CreateAsync(
-                new Subscription
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    CreatedOn = DateTime.Now,
-                    SubscriptionId = subscriptionId,
-                    UserId = userId,
-                    Email = request.Email,
-                    Details = request.Details.Select(x => new SubscriptionDetail { Catalogue = x.Catalogue, Key = x.Key, Operator = x.Operator, Value = x.Value })
-                });
+            var subscription = new Subscription
+            {
+                Id = Guid.NewGuid().ToString(),
+                CreatedOn = DateTime.Now,
+                SubscriptionId = subscriptionId,
+                UserId = userId,
+                Email = request.Email,
+                Details = request.Details.Select(x => new SubscriptionDetail { Catalogue = x.Catalogue, Key = x.Key, Operator = x.Operator, Value = x.Value })
+            };
+
+            var id = await _subscriptionRepository.CreateAsync(subscription);
+
+            _cacheProvider.AddOrUpdateItem(subscriptionId, subscription);
 
             return new CreateSubscriptionResponseDto { SubscriptionId = subscriptionId };
         }
@@ -53,6 +58,9 @@ namespace Dubizzle.SavedSearch.Service
             
             if (userId is null)
                 throw new ArgumentNullException(nameof(userId));
+
+            if (_cacheProvider.Exists(subscriptionId))
+                return _cacheProvider.GetItem(subscriptionId) as SubscriptionResponseDto;
 
             var entity = await _subscriptionRepository.GetAsync(subscriptionId, userId);
 
@@ -88,7 +96,7 @@ namespace Dubizzle.SavedSearch.Service
                 throw new ArgumentNullException(nameof(userId));
 
             await DeleteAsync(subscriptionId, userId);
-
+            
             return await CreateSubscriptionAsync(request, userId, subscriptionId);
         }
 
@@ -109,7 +117,9 @@ namespace Dubizzle.SavedSearch.Service
 
             if (userId is null)
                 throw new ArgumentNullException(nameof(userId));
-            
+
+            _cacheProvider.Delete(subscriptionId);
+
             await _subscriptionRepository.DeleteAsync(subscriptionId, userId);
         }
 

@@ -14,10 +14,12 @@ namespace Dubizzle.SavedSearch.Tests
     {
         private readonly SubscriptionService _subscriptionService;
         private readonly Mock<ISubscriptionRepository<Subscription>> _mockSubscriptionRepository;
+        private readonly Mock<ICacheProvider> _mockCacheProvider;
         public SubscriptionServiceTests()
         {
             _mockSubscriptionRepository = new Mock<ISubscriptionRepository<Subscription>>();
-            _subscriptionService = new SubscriptionService(_mockSubscriptionRepository.Object);
+            _mockCacheProvider = new Mock<ICacheProvider>();
+            _subscriptionService = new SubscriptionService(_mockSubscriptionRepository.Object, _mockCacheProvider.Object);
         }
 
         [Fact]
@@ -35,6 +37,7 @@ namespace Dubizzle.SavedSearch.Tests
             #region Assert
             Assert.NotNull(result);
             Assert.NotNull(result.SubscriptionId);
+            _mockCacheProvider.Verify(c => c.AddOrUpdateItem(It.IsAny<string>(), It.IsAny<object>()), Times.Once);
             #endregion
         }
 
@@ -55,6 +58,7 @@ namespace Dubizzle.SavedSearch.Tests
             #region Assert
             Assert.NotNull(result);
             Assert.Equal(mockSubscriptionId, result.SubscriptionId);
+            _mockCacheProvider.Verify(c => c.AddOrUpdateItem(It.IsAny<string>(), It.IsAny<object>()), Times.Once);
             #endregion
         }
     }

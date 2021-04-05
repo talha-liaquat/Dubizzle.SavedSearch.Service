@@ -89,6 +89,26 @@ namespace Dubizzle.SavedSearch.Scheduler
             };
         }
 
+        public void BindExchangeAndQueues(string exchange, string exchangeRetry, string queue, int logTtl = 432000000, int retryTtl = 900000)
+        {
+            ExchangeDeclare(exchange, "topic", true);
+
+            ExchangeDeclare(exchangeRetry, "topic", true);
+
+            QueueDeclare(queue, true, false, false, new Dictionary<string, object> {
+                            { "x-dead-letter-exchange", exchangeRetry }});
+            QueueBind(queue, exchange, $"{queue}.#", null);
+
+            QueueDeclare($"{queue}.Log", true, false, false, new Dictionary<string, object> {
+                            { "x-message-ttl", logTtl }});
+            QueueBind($"{queue}.Log", exchange, $"{queue}.#", null);
+
+            QueueDeclare($"{queue}.Retry", true, false, false, new Dictionary<string, object> {
+                            { "x-dead-letter-exchange", exchange },
+                            { "x-message-ttl", retryTtl }});
+            QueueBind($"{queue}.Retry", exchangeRetry, $"{queue}.#", null);
+        }
+
         public void Rollback(InternalMessageEnvelopDto message)
         {
             _model.BasicNack(message.Tag, false, false);
