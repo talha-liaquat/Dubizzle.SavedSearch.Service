@@ -16,11 +16,13 @@ namespace Dubizzle.SavedSearch.Api
 
         public MongoDbProvider(IConfiguration configuration)
         {
-            var client = new MongoClient(configuration.GetConnectionString("MongoDb"));
+            var mongoDbSection = configuration.GetSection("MongoDb");
 
-            _database = client.GetDatabase(configuration.GetConnectionString("Database"));
+            var client = new MongoClient(mongoDbSection["ConnectionString"]);
 
-            _collection = configuration.GetConnectionString("SubscriptionsCollectionName");
+            _database = client.GetDatabase(mongoDbSection["Database"]);
+
+            _collection = mongoDbSection["Collection"];
         }
 
         public async Task<T> CreateAsync<T>(T entity)

@@ -11,10 +11,7 @@ namespace Dubizzle.SavedSearch.Service
 {
     public class EmailService : INotificationService<EmailMessageDto>
     {
-        private readonly IConfiguration _configuration;
         private readonly string _apiKey;
-        private readonly int _port;
-        private readonly string _username;
         private readonly string _fromName;
         private readonly string _from;
 
@@ -33,11 +30,10 @@ namespace Dubizzle.SavedSearch.Service
             var client = new SendGridClient(_apiKey);
             var from = new EmailAddress(_from, _fromName);
             var subject = message.Subject;
-            var to = message.Recepients.Select(x => new EmailAddress { Email = x }).ToList();
-            to.Add(new EmailAddress { Email = _from });
+            var to = new EmailAddress(message.Recepients.First(), message.Recepients.First());
             var plainTextContent = message.Body;
             var htmlContent = message.Body;
-            var msg = MailHelper.CreateSingleEmailToMultipleRecipients(from, to, subject, plainTextContent, htmlContent);
+            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             await client.SendEmailAsync(msg);
         }
     }
