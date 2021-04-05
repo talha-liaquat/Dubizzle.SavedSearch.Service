@@ -17,8 +17,6 @@ namespace Dubizzle.SavedSearch.Service
 
         public EmailService(IConfiguration configuration)
         {
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-
             var sendGrid = configuration.GetSection("SendGrid");
 
             _apiKey = sendGrid["ApiKey"];
