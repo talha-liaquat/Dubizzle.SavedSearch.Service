@@ -5,7 +5,9 @@ namespace Dubizzle.SavedSearch.Dto
 {
     public class SubscriptionResponseDto
     {
-        public string Id { get; set; }
+        public string SubscriptionId { get; set; }
+
+        public string Url { get; set; }
 
         public string Email { get; set; }
         

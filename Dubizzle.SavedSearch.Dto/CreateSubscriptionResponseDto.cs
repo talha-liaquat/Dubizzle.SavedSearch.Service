@@ -8,5 +8,7 @@ namespace Dubizzle.SavedSearch.Dto
         public string SubscriptionId { get; set; }
         [Required]
         public string Url { get; set; }
+        [Required]
+        public string UserId { get; set; }
     }
 }

@@ -75,7 +75,6 @@ namespace Dubizzle.SavedSearch.Service
             if (userId is null)
                 throw new ArgumentNullException(nameof(userId));
 
-
             var entities = await _subscriptionRepository.GetAllByUserIdAsync(userId);
 
             if (entities == null)
@@ -95,8 +94,9 @@ namespace Dubizzle.SavedSearch.Service
             if (userId is null)
                 throw new ArgumentNullException(nameof(userId));
 
-            await DeleteAsync(subscriptionId, userId);
-            
+            if (!await DeleteAsync(subscriptionId, userId))
+                return null;
+
             return await CreateSubscriptionAsync(request, userId, subscriptionId);
         }
 
@@ -104,13 +104,13 @@ namespace Dubizzle.SavedSearch.Service
         {
             return new SubscriptionResponseDto
             {
-                Id = entity.SubscriptionId,
+                SubscriptionId = entity.SubscriptionId,
                 Email = entity.Email,
                 Details = entity.Details?.Select(x => new SubscriptionDetailDto { Key = x.Key, Operator = x.Operator, Value = x.Value })
             };
         }
 
-        public async Task DeleteAsync(string subscriptionId, string userId)
+        public async Task<bool> DeleteAsync(string subscriptionId, string userId)
         {
             if (subscriptionId is null)
                 throw new ArgumentNullException(nameof(subscriptionId));
@@ -120,7 +120,7 @@ namespace Dubizzle.SavedSearch.Service
 
             _cacheProvider.Delete(subscriptionId);
 
-            await _subscriptionRepository.DeleteAsync(subscriptionId, userId);
+            return await _subscriptionRepository.DeleteAsync(subscriptionId, userId);
         }
 
         public async Task<IEnumerable<SubscriptionResponseDto>> GetAllAsync()

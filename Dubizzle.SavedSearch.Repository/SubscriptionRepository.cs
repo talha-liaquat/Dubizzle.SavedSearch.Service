@@ -19,9 +19,9 @@ namespace Dubizzle.SavedSearch.Repository
             return (await _databaseProvider.CreateAsync(subscription)).SubscriptionId;
         }
 
-        public async Task DeleteAsync(string subscriptionId, string userId)
+        public async Task<bool> DeleteAsync(string subscriptionId, string userId)
         {
-            await _databaseProvider.DeleteAsync<Subscription>(x=> x.SubscriptionId == subscriptionId && x.UserId == userId && !x.IsDeleted);
+            return await _databaseProvider.DeleteAsync<Subscription>(x=> x.SubscriptionId == subscriptionId && x.UserId == userId && !x.IsDeleted);
         }
 
         public async Task<Subscription> GetAsync(string subscriptionId, string userId)

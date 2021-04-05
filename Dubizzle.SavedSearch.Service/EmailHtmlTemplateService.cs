@@ -13,7 +13,7 @@ namespace Dubizzle.SavedSearch.Service
 
             stringBuilder.Append($"Hi {obj.message.Email}<br /><br />");
 
-            stringBuilder.Append($"Here are some products matching your search criteria");
+            stringBuilder.Append($"Here are some products matching your search criteria:<br /><br />");
             
             stringBuilder.Append($"<table>");
 

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Dubizzle.SavedSearch.Api.Controllers
@@ -30,19 +31,26 @@ namespace Dubizzle.SavedSearch.Api.Controllers
             if (response == null)
                 return NoContent();
 
+            response.Url = GetUrl(response.SubscriptionId);
+
             return Ok(response);
         }
 
-        [HttpGet("user/{userId}")]
+        [HttpGet()]
         [ProducesResponseType(typeof(SubscriptionResponseDto), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetByUser([Required] string userId)
+        public async Task<IActionResult> GetByUser([Required][FromHeader(Name = "User-Id")] string userId)
         {
-            var response = await _subscriptionService.GetByUserIdAsync(userId);
+            var subscriptions = (await _subscriptionService.GetByUserIdAsync(userId)).ToList();
 
-            if (response == null)
+            if (subscriptions == null)
                 return NoContent();
 
-            return Ok(response);
+            foreach(var subscription in subscriptions)
+            {
+                subscription.Url = GetUrl(subscription.SubscriptionId);
+            }
+
+            return Ok(subscriptions);
         }
 
         [HttpPost]
@@ -53,7 +61,8 @@ namespace Dubizzle.SavedSearch.Api.Controllers
 
             var response = await _subscriptionService.CreateAsync(request, userId);
 
-            response.Url = $"{Request.Scheme}://{Request.Host}{Request.Path}/user/{userId}/subscription/{response.SubscriptionId}";
+            response.Url = GetUrl(response.SubscriptionId);
+            response.UserId = userId;
 
             return Ok(response);
         }
@@ -66,17 +75,26 @@ namespace Dubizzle.SavedSearch.Api.Controllers
 
             var response = await _subscriptionService.UpdateAsync(request, id, userId);
 
-            response.Url = $"{Request.Scheme}://{Request.Host}{Request.Path}/user/{userId}/subscription/{response.SubscriptionId}";
+            if (response == null)
+                return BadRequest();
+
+            response.Url = GetUrl(response.SubscriptionId);
+            response.UserId = userId;
 
             return Ok(response);
+        }
+
+        private string GetUrl(string subscriptionId)
+        {
+            return $"{Request.Scheme}://{Request.Host}/api/subscriptions/{subscriptionId}";
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(string id, [Required][FromHeader(Name = "User-Id")] string userId)
         {
-            await _subscriptionService.DeleteAsync(id, userId);
+            var isDeleted = await _subscriptionService.DeleteAsync(id, userId);
 
-            return Ok();
+            return !isDeleted ? BadRequest() : (IActionResult)Ok();
         }
     }
 }

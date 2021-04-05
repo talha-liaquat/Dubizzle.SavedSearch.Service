@@ -32,11 +32,11 @@ namespace Dubizzle.SavedSearch.Api
             return entity;
         }
 
-        public async Task DeleteAsync<T>(Expression<Func<T, bool>> filter) where T : IEntity
+        public async Task<bool> DeleteAsync<T>(Expression<Func<T, bool>> filter) where T : IEntity
         {
             var update = Builders<T>.Update.Set(s => s.IsDeleted, true);
 
-            await GetCollection<T>().UpdateOneAsync(filter, update);
+            return (await GetCollection<T>().UpdateOneAsync(filter, update)).ModifiedCount > 0;
         }
 
         public async Task<IEnumerable<T>> GetAllAsync<T>(Expression<Func<T, bool>> filter) where T : IEntity

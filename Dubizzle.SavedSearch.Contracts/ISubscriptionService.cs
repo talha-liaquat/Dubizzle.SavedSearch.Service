@@ -10,7 +10,7 @@ namespace Dubizzle.SavedSearch.Contracts
         Task<SubscriptionResponseDto> GetAsync(string subscriptionId, string userId);
         Task<IEnumerable<SubscriptionResponseDto>> GetByUserIdAsync(string userId);
         Task<CreateSubscriptionResponseDto> UpdateAsync(CreateSubscriptionRequestDto request, string subscriptionId, string userId);
-        Task DeleteAsync(string subscriptionId, string userId);
+        Task<bool> DeleteAsync(string subscriptionId, string userId);
         Task<IEnumerable<SubscriptionResponseDto>> GetAllAsync();
     }
 }
