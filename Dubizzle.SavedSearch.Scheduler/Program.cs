@@ -6,6 +6,7 @@ using Dubizzle.SavedSearch.Repository;
 using Dubizzle.SavedSearch.Service;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Threading.Tasks;
 
 namespace Dubizzle.SavedSearch.Scheduler
@@ -22,9 +23,18 @@ namespace Dubizzle.SavedSearch.Scheduler
                     services.AddScoped<ISubscriptionService, SubscriptionService>();
                     services.AddScoped<ISubscriptionRepository<Subscription>, SubscriptionRepository>();
                     services.AddSingleton<IDatabaseProvider, MongoDbProvider>();
-                    services.AddHostedService<TimedHostedService>();
+                    if (args.Length > 0 && !args[0].Equals("mode:searchNotification", StringComparison.OrdinalIgnoreCase))
+                    {
+                        services.AddHostedService<TimedHostedService>();
+                        
+                    }
+                    else
+                    {
+                        services.AddHostedService<SearchNotificationHostedService>();
+                    }
+                        
                     services.AddSingleton<ICacheProvider, RedisCacheProvider>();
-                    services.AddSingleton<INotificationService<EmailMessageDto>, EmailService>();
+                    services.AddSingleton<INotificationService<EmailMessageDto>, FileService>();
                     services.AddSingleton<IProductService<ProductSearchRequestDto, ProductSearchResponseDto>, ProductService>();
                     
                 })

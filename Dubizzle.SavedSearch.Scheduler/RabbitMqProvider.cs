@@ -71,7 +71,7 @@ namespace Dubizzle.SavedSearch.Scheduler
 
         public void Read(string queueName)
         {
-            _model.BasicQos(0, 1, true);
+            _model.BasicQos(0, 100, true);
             var eventingBasicConsumer = new EventingBasicConsumer(_model);
             _model.BasicConsume(queueName, false, eventingBasicConsumer);
 

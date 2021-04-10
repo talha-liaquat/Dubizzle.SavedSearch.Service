@@ -49,6 +49,7 @@ namespace Dubizzle.SavedSearch.Tests
             var mockSubscriptionId = Guid.NewGuid().ToString();
             var mocKSubscription = new Subscription { SubscriptionId = mockSubscriptionId };
             _mockSubscriptionRepository.Setup(x => x.UpdateAsync(mocKSubscription, mockSubscriptionId)).ReturnsAsync(mocKSubscription);
+            _mockSubscriptionRepository.Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
             #endregion
 
             #region Act

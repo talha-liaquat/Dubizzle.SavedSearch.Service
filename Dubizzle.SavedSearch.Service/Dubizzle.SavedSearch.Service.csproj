@@ -16,4 +16,10 @@
     <ProjectReference Include="..\Dubizzle.SavedSearch.Repository\Dubizzle.SavedSearch.Repository.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="CarsTestData.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
