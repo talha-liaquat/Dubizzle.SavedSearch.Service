@@ -48,7 +48,10 @@ namespace Dubizzle.SavedSearch.Scheduler
                     .Search(new ProductSearchRequestDto { Params = message.Items.Select(x => new ProductSearchRequestParamDto { Key = x.Key, Operator = x.Operator, Value = x.Value }).ToList()});
 
                 if (searchResult == null || searchResult.Result == null || !searchResult.Result.Any())
+                {
+                    _queueProvider.Commit(message);
                     return;
+                }
 
                 var htmlTeamplate = _templateService.GenerateTemplate((message, searchResult));
 
